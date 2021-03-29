@@ -68,7 +68,7 @@ def get_impulsed_egor_loh_data(data):
     return impulsed_data
 
 
-""" We cannot delete this, because of our love to gays in informatics :::)))
+""" We cannot delete this, because of our love to gays in informatics :::))) """
 def matrix(data):
     l = []
     ma = []
@@ -80,7 +80,7 @@ def matrix(data):
         ma.append(l)
         l = []
     print("Matrix final length: ", len(ma))
-    return ma; """
+    return ma
 
 
 def lum(data_am):
@@ -135,17 +135,8 @@ def print_shit_in_shit():
     print()
 
 
+if __name__ == "__main__":
+    data, fs = resample(data, fs)
+    data_am = hilbert(data)
 
-data, fs = resample(data, fs)
-data_am = hilbert(data)
-
-data_am = lum(data_am)
-
-
-print_shit_in_shit()
-
-# res_data = get_impulsed_egor_loh_data(data_am)
-
-#res_data = lum(res_data)
-#graph(res_data, fs)
-
+    data_am = lum(data_am)

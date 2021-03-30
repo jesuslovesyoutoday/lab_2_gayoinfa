@@ -4,24 +4,15 @@
 #! Made in 230 palata 
 
 #! We used a few parts of code from this brilliant habr page:
-##  habr.com/ru/535206
+##  habr.com/ru/posts/535206
 
-import scipy.io.wavfile as wav
-import scipy.signal as signal
-import numpy as np
 import matplotlib.pyplot as plt
+import scipy.io.wavfile  as wav
+import scipy.signal      as signal
+import numpy             as np
+
 from statistics import mean
-
-from PIL import Image
-
-fs, data = wav.read('signal.WAV')
-
-DATA_LEN = len(data)
-print(DATA_LEN)
-
-#plt.figure(figsize=(12,4))
-#plt.plot(data)
-#plt.show()
+from PIL        import Image
 
 def resample(data, fs):
     resample = int(11025/4160)
@@ -35,48 +26,43 @@ def hilbert(data):
     return amplitude_envelope
 
 def impulse(data, it):
-    errors = 0;
     imp = False
-    impulse = [0, 1, 0, 1, 0, 1, 0, 1, 0, 1]
-    while not(imp):
-        if (data[it] == impulse[0]):
-            for j in impulse:
-                if (data[it] == j):
-                    print("NO")
-                    imp = True
-                    it += 1
-                else:
-                    print("YES")
-                    imp = False
-                    break
+    k = 1
+    impulse = [53, 53, 112, 144, 142, 133, 105, 40, 89, 170, 181, 159, 150, 120, 88]
+    result  = [ 0,  0,   0,   0,   0,   0,   0,  0,  0,   0,   0,   0,   0,   0,  0]
+    while not(imp) and it < len(data) - len(impulse):
+        for i in range(len(impulse)):
+            result[i] = abs(data[it + i] - impulse[i])
+        res = sum(result)
+        if res < 356.25:
+            imp = True
         it += 1
-    return data[(it-10):(it + 2080)];
-    
-# <it> is @param for iteration in impulse() func
-# it is made -2000 because we want more "ApTiMiSaTiOn"
-# it = -2000
 
+    return data[(it-len(impulse)):(it + 2080)];
+    
 def get_impulsed_egor_loh_data(data):
     impulsed_data = []
     
-    it = -2000
+    it = -2070
     while it < DATA_LEN:
-        it += 2000
+        it += 2070
         print(it)
         impulsed_data.append(impulse(data, it))
 
     return impulsed_data
 
 
-""" We cannot delete this, because of our love to gays in informatics :::))) """
-def matrix(data):
+""" We cannot delete this, because of our love to gays and informatics :::))) """
+def matrix(data, fs):
     l = []
     ma = []
 
+    new_fs = int(fs * 0.5)
+
     #errors = impulse(data)
-    for i in range (int(len(data)/2080)):
-        for j in range(2080):
-            l.append(data[i*2080 + j])
+    for i in range (int(len(data)/new_fs)):
+        for j in range(new_fs):
+            l.append(data[i*new_fs + j])
         ma.append(l)
         l = []
     print("Matrix final length: ", len(ma))
@@ -96,13 +82,13 @@ def lum(data_am):
     return data_am
 
 def graph(data_am, fs):
-    
-    w, h = 2080, len(data_am)
+    new_fs = int(fs * 0.5)
+    w, h = new_fs, len(data_am)
     image = Image.new('RGB', (w, h))
 
     px, py = 0, 0
     for i in range(len(data_am)):
-        for j in range(2080):
+        for j in range(new_fs):
             lum = int(data_am[i][j])
             image.putpixel((px, py), (lum, lum, lum))
             px += 1
@@ -114,12 +100,13 @@ def graph(data_am, fs):
                 if py >= h:
                     break
 
-    mage = image.resize((w, 4*h))
-    plt.imshow(image)
-    plt.show()
-    #plt.imsave('image.png',image)
+    # mage = image.resize((w, 4*h))
+    # plt.imshow(image)
+    # plt.show()
+    # plt.imsave('image.png',image)
+    image.save('image.png')
 
-def print_shit_in_shit():
+def print_shit_in_shit(data_am):
     k = 0
     for i in range(10000):
         if (data_am[i] > 200):
@@ -136,7 +123,18 @@ def print_shit_in_shit():
 
 
 if __name__ == "__main__":
+    fs, data = wav.read('signal.wav')
+
     data, fs = resample(data, fs)
     data_am = hilbert(data)
 
+    DATA_LEN = len(data)
+    print(DATA_LEN)
+
     data_am = lum(data_am)
+
+    #print("Fs id: ", fs)
+    #graph(data_am, fs)
+
+    impulse(data_am, 0)
+

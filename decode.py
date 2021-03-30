@@ -15,7 +15,7 @@ from statistics import mean
 from PIL        import Image
 
 def resample(data, fs):
-    resample = int(11025/4160)
+    resample = int(11025/4159.8)
     data = data[::resample]
     fs = fs//resample
     return data, fs
@@ -26,30 +26,51 @@ def hilbert(data):
     return amplitude_envelope
 
 def impulse(data, it):
+    fo = open("synh_indexes.dat", "w")
     imp = False
     k = 1
-    impulse = [53, 53, 112, 144, 142, 133, 105, 40, 89, 170, 181, 159, 150, 120, 88]
-    result  = [ 0,  0,   0,   0,   0,   0,   0,  0,  0,   0,   0,   0,   0,   0,  0]
+    impulse = [53, 53, 112, 144, 142, 133, 105, 40, 89, 170, 181, 159, 150, 120, 88,
+               142, 205, 199, 168, 174, 143, 126, 177, 202, 195, 190, 188, 142, 128,
+               174, 181, 182, 202, 187]
+    result = []
+    for i in range(len(impulse)):
+        result.append(0)
     while not(imp) and it < len(data) - len(impulse):
         for i in range(len(impulse)):
             result[i] = abs(data[it + i] - impulse[i])
         res = sum(result)
-        if res < 356.25:
-            imp = True
+        if res < 2000:
+            fo.write(str(it) + "\n")
+            it += 2070
         it += 1
 
-    return data[(it-len(impulse)):(it + 2080)];
-    
-def get_impulsed_egor_loh_data(data):
-    impulsed_data = []
-    
-    it = -2070
-    while it < DATA_LEN:
-        it += 2070
-        print(it)
-        impulsed_data.append(impulse(data, it))
+    fo.close()
 
-    return impulsed_data
+    
+def get_impulsed_egor_loh_data(data, fs):
+    impulse(data, 0)
+    
+    fi = open("synh_indexes.dat", "r")
+    indexes = list(map(int, fi.readlines()))
+
+    impulsed_data = []
+
+    for i in range(len(indexes)):
+        impulsed_data.append(data[indexes[i]:indexes[i] + 2080])
+
+    fo = open("impulsed_data.dat", "w")
+    
+    for i in impulsed_data:
+        for j in i:
+            fo.write(str(int(j)) + " ")
+        fo.write("\n")
+
+    for i in impulsed_data:
+        print(len(i))
+
+    graph(impulsed_data[0:len(impulsed_data) - 1], fs)
+    fi.close()
+    fo.close()
 
 
 """ We cannot delete this, because of our love to gays and informatics :::))) """
@@ -82,7 +103,7 @@ def lum(data_am):
     return data_am
 
 def graph(data_am, fs):
-    new_fs = int(fs * 0.5)
+    new_fs = 2080# fs
     w, h = new_fs, len(data_am)
     image = Image.new('RGB', (w, h))
 
@@ -123,18 +144,31 @@ def print_shit_in_shit(data_am):
 
 
 if __name__ == "__main__":
-    fs, data = wav.read('signal.wav')
+    fs, data = wav.read('out.wav')
 
-    data, fs = resample(data, fs)
+#    data, fs = resample(data, fs)
     data_am = hilbert(data)
+
 
     DATA_LEN = len(data)
     print(DATA_LEN)
 
     data_am = lum(data_am)
 
+    print(min(data_am))
+
     #print("Fs id: ", fs)
     #graph(data_am, fs)
 
-    impulse(data_am, 0)
+    get_impulsed_egor_loh_data(data_am, fs)
 
+    # impulse(data_am, 0)
+
+    """data_am = matrix(data_am, fs)
+
+    fo = open("synhroimpuls_one.dat", "w")
+    i = 477
+    for j in range(595, 650):
+        fo.write(str(int(data_am[i][j])) + ", ")
+        
+    #graph(data_am, fs) """

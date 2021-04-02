@@ -4,7 +4,7 @@
 #! Made in 230 palata 
 
 #! We used a few parts of code from this brilliant habr page:
-##  habr.com/ru/posts/535206
+##  https://habr.com/ru/post/535206/
 
 import matplotlib.pyplot as plt
 import scipy.io.wavfile  as wav

@@ -3,7 +3,7 @@
 #! Semyonova Alyona and Osipov Egor
 #! Made in 230 palata 
 
-#! We used a few parts of code from this brilliant pages:
+#! We used a few parts of code from this absolutly brilliant pages:
 ##  https://habr.com/ru/post/535206/
 ##  https://github.com/zacstewart/apt-decoder
 

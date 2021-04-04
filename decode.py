@@ -1,5 +1,5 @@
-#! Laba-huyaba №2
-#! (C) Made with love to gays and informatics by:
+#! Laba-horoshaya №2
+#! (C) Made with love to informatics by:
 #! Semyonova Alyona and Osipov Egor
 #! Made in 230 palata 
 
@@ -10,28 +10,53 @@ import matplotlib.pyplot as plt
 import scipy.io.wavfile  as wav
 import scipy.signal      as signal
 import numpy             as np
+import scipy
 
 from statistics import mean
 from PIL        import Image
 
 def resample(data, fs):
-    resample = int(11025/4159.8)
-    data = data[::resample]
+    resample = 5 #int(11025/4159.8)
     fs = fs//resample
+    data = data[::resample]
     return data, fs
 
 def hilbert(data):
     analytical_signal = signal.hilbert(data)
     amplitude_envelope = np.abs(analytical_signal)
     return amplitude_envelope
+    
+def _reshape(data):
+    syncA = [0, 128, 255, 128]*7 + [0]*7
+
+    peaks = [(0, 0)]
+
+    mindistance = 2000
+
+    signalshifted = [x-128 for x in data]
+    syncA = [x-128 for x in syncA]
+    for i in range(len(data)-len(syncA)):
+        corr = np.dot(syncA, signalshifted[i : i+len(syncA)])
+
+        if i - peaks[-1][0] > mindistance:
+            peaks.append((i, corr))
+
+        elif corr > peaks[-1][1]:
+            peaks[-1] = (i, corr)
+
+    matrix = []
+    for i in range(len(peaks) - 1):
+        matrix.append(data[peaks[i][0] : peaks[i][0] + 2080])
+
+    return np.array(matrix)
 
 def impulse(data, it):
     fo = open("synh_indexes.dat", "w")
     imp = False
     k = 1
-    impulse = [53, 53, 112, 144, 142, 133, 105, 40, 89, 170, 181, 159, 150, 120, 88,
-               142, 205, 199, 168, 174, 143, 126, 177, 202, 195, 190, 188, 142, 128,
-               174, 181, 182, 202, 187]
+    impulse = [78, 247, 255, 88, 33, 253, 255, 65, 63, 235, 
+               253, 47, 62, 255, 240, 78, 42, 230, 255, 57, 
+               65, 242, 255, 60, 55, 255, 232]
     result = []
     for i in range(len(impulse)):
         result.append(0)
@@ -39,7 +64,7 @@ def impulse(data, it):
         for i in range(len(impulse)):
             result[i] = abs(data[it + i] - impulse[i])
         res = sum(result)
-        if res < 2000:
+        if res < 2368.75:
             fo.write(str(it) + "\n")
             it += 2070
         it += 1
@@ -48,7 +73,7 @@ def impulse(data, it):
 
     
 def get_impulsed_egor_loh_data(data, fs):
-    impulse(data, 0)
+    # impulse(data, 0)
     
     fi = open("synh_indexes.dat", "r")
     indexes = list(map(int, fi.readlines()))
@@ -73,7 +98,7 @@ def get_impulsed_egor_loh_data(data, fs):
     fo.close()
 
 
-""" We cannot delete this, because of our love to gays and informatics :::))) """
+""" We cannot delete this, because of our love to debug :::))) """
 def matrix(data, fs):
     l = []
     ma = []
@@ -94,7 +119,6 @@ def lum(data_am):
     maximum = max(data_am)
     minimum = min(data_am)
 
-    print(maximum, minimum)
     a = 255/(maximum - minimum)
     b = -a*minimum
     for i in range(len(data_am)):
@@ -145,30 +169,19 @@ def print_shit_in_shit(data_am):
 
 if __name__ == "__main__":
     fs, data = wav.read('out.wav')
+    print("Rate:", fs)
 
-#    data, fs = resample(data, fs)
+    RATE = 20800
+    truncate = RATE * int(len(data) // RATE)
+    data = data[:truncate]
+    print(len(data))
     data_am = hilbert(data)
+    data_am = data_am.reshape(int(len(data_am) // 5), 5)
+    data_am = lum(data_am[:, 2])
 
+    result = _reshape(data_am)
+    
+    image = Image.fromarray(result)
+    image = image.convert('RGB')
+    image.save("./result/output.png")
 
-    DATA_LEN = len(data)
-    print(DATA_LEN)
-
-    data_am = lum(data_am)
-
-    print(min(data_am))
-
-    #print("Fs id: ", fs)
-    #graph(data_am, fs)
-
-    get_impulsed_egor_loh_data(data_am, fs)
-
-    # impulse(data_am, 0)
-
-    """data_am = matrix(data_am, fs)
-
-    fo = open("synhroimpuls_one.dat", "w")
-    i = 477
-    for j in range(595, 650):
-        fo.write(str(int(data_am[i][j])) + ", ")
-        
-    #graph(data_am, fs) """

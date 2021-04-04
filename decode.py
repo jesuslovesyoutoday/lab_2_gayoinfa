@@ -3,8 +3,9 @@
 #! Semyonova Alyona and Osipov Egor
 #! Made in 230 palata 
 
-#! We used a few parts of code from this brilliant habr page:
+#! We used a few parts of code from this brilliant pages:
 ##  https://habr.com/ru/post/535206/
+##  https://github.com/zacstewart/apt-decoder
 
 import matplotlib.pyplot as plt
 import scipy.io.wavfile  as wav
